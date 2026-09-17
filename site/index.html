@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supply Chain Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Live Supply Chain Dashboard</h1>
+      <p id="generatedAt" class="subtitle"></p>
+    </div>
+    <button id="refreshBtn" type="button">Refresh</button>
+  </header>
+
+  <main>
+    <div id="status" class="status">Loading dashboard…</div>
+
+    <section id="kpis" class="kpis"></section>
+
+    <div id="roles">
+      <section class="role-card" data-role="manufacturer">
+        <h2>Manufacturer <span class="badge" id="count-manufacturer">0</span></h2>
+        <div class="table-wrap" id="table-manufacturer"></div>
+      </section>
+      <section class="role-card" data-role="distributor">
+        <h2>Distributor <span class="badge" id="count-distributor">0</span></h2>
+        <div class="table-wrap" id="table-distributor"></div>
+      </section>
+      <section class="role-card" data-role="retailer">
+        <h2>Retailer <span class="badge" id="count-retailer">0</span></h2>
+        <div class="table-wrap" id="table-retailer"></div>
+      </section>
+      <section class="role-card" data-role="garage">
+        <h2>Garage <span class="badge" id="count-garage">0</span></h2>
+        <div class="table-wrap" id="table-garage"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
