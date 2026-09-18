@@ -14,6 +14,17 @@ The system is designed around:
 - a protected dashboard endpoint that exposes the latest combined data
 - a static front-end that consumes that endpoint and displays the results
 
+## Who this is useful for
+
+This project is intended for:
+
+- supply-chain or operations teams that need a shared view of stock movement
+- manufacturers, distributors, retailers, and garages that submit stock requests
+- n8n administrators who automate validation, inventory updates, notifications, and audit logging
+- developers who need a lightweight dashboard over Google Forms and Google Sheets
+
+It is an operational MVP, not a full ERP, accounting system, customer portal, or replacement for access control. The dashboard is shared by design and should only expose data to authenticated users who are permitted to see the combined activity.
+
 ## Website files
 
 | File | Purpose |
@@ -22,9 +33,10 @@ The system is designed around:
 | `site/style.css` | Styling for the dashboard layout, KPI cards, badges, and tables. |
 | `site/script.js` | Fetches the live JSON from the n8n webhook and renders the UI. |
 | `site/n8n-code-node-source.js` | The JavaScript source used in the n8n Code node to generate the HTML dashboard. |
-| `workflows/Live_Inventory___Supply_Chain_Management_MVP__fixed.json` | Full n8n workflow export. |
+| `workflows/workflow.json` | Full n8n workflow export. |
 | `doc/ARCHITECTURE.md` | Detailed workflow and architecture explanation. |
 | `doc/WEBSITE.md` | Front-end dashboard usage and troubleshooting guide. |
+| `doc/LIVE_INVENTORY_SCHEMA.md` | Workbook tabs, columns, relationships, setup checklist, and snapshot quality notes. |
 
 ## Current dashboard behavior
 
@@ -70,11 +82,39 @@ Important notes:
 - If the page is hosted outside the n8n domain, the webhook must allow cross-origin requests via a response header such as `Access-Control-Allow-Origin`.
 - The page is intended to load data from the live workflow, not from local mock data.
 
+## Requirements
+
+- An n8n instance with permission to import and activate workflows
+- Google Sheets OAuth2 credentials for the main and role spreadsheets
+- Gmail OAuth2 credentials for success and failure notifications
+- One main Google Spreadsheet and four role spreadsheets
+- Four Google Forms linked to the matching `FORM_RESPONSES_*` tabs
+- A Basic Auth credential for the dashboard webhook
+- A browser for the dashboard and a local static server for development preview
+
+The workbook schema and exact column contracts are documented in
+[`doc/LIVE_INVENTORY_SCHEMA.md`](doc/LIVE_INVENTORY_SCHEMA.md). Review it before creating the Google Sheets. In particular, the checked-in Excel snapshot has structural problems in `INVENTORY` and `ORDERS` that must be repaired before it is used as a production template.
+
+## Setup from scratch
+
+1. Create the main spreadsheet with `PRODUCTS`, `ORGANIZATIONS`, `USERS`, `PRICE_HISTORY`, `DASHBOARD`, `ERROR_LOG`, and the four `FORM_RESPONSES_*` tabs.
+2. Create one role spreadsheet for each Manufacturer, Distributor, Retailer, and Garage. Add `INVENTORY`, `ORDERS`, and `TRANSACTIONS` to each role spreadsheet.
+3. Add the exact first-row headers from [`doc/LIVE_INVENTORY_SCHEMA.md`](doc/LIVE_INVENTORY_SCHEMA.md). Use one row per record and do not add duplicate or tab-delimited headers.
+4. Add Google Sheets OAuth2 and Gmail OAuth2 credentials in n8n.
+5. Import [`workflows/workflow.json`](workflows/workflow.json).
+6. Replace the spreadsheet IDs in the workflow's configuration, role-sheet, and form-response reader nodes.
+7. Create the Manufacturer, Distributor, Retailer, and Garage forms. Link each form to its matching response tab and preserve the ten response headers.
+8. Create a Basic Auth credential in n8n and assign it to `Dashboard Webhook`.
+9. Activate the workflow and submit test requests for each valid route.
+10. Verify inventory changes, order and transaction rows, confirmation email, error logging, failure email, and dashboard output.
+
+For an existing workbook, repair `INVENTORY` and `ORDERS` first, then compare every header with the schema document. The local `sample-excel/Live Inventory.xlsx` is a reference snapshot and does not update automatically from Google Sheets.
+
 ## Local preview
 
 You can preview the dashboard by opening `site/index.html` in a browser, or by serving the `site` folder from a local static web server. The key requirement is that the endpoint returns valid JSON and is reachable from the page.
 
-For a local deployment, update the `WEBHOOK_URL` constant at the top of `site/script.js` to match your own n8n endpoint.
+For a local deployment, update the `WEBHOOK_URL` constant at the top of `site/script.js` to match your own n8n endpoint. If the endpoint is on another origin, configure CORS on the webhook response and use HTTPS in production.
 
 ## Workflow context
 
